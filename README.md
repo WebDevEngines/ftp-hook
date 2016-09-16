@@ -1,7 +1,5 @@
 # Quick Start
 
-Simple server that responds to FTP `PUT` commands and `POST`s to a defined web hook url.
-
 ### Build the docker image  
 ```
 docker build -t ftp_hook .
