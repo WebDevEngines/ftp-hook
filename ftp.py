@@ -47,6 +47,8 @@ def main(port):
     handler.authorizer = DummyAuthorizer()
     handler.authorizer.add_user(FTP_USERNAME, FTP_PASSWORD, '/jail/', perm='w')
     handler.banner = "FTP Hook"
+    handler.permit_foreign_addresses = True
+    handler.passive_ports = range(50000, 50010)
     server = FTPServer(("", port), handler)
     server.max_cons = 256
     server.max_cons_per_ip = 5

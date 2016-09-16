@@ -16,3 +16,4 @@ RUN chmod -R 777 /opt/
 RUN mkdir /jail/
 RUN sudo ln -s /opt/run.sh /bin/run_ftp
 CMD run_ftp
+EXPOSE 20 21 50000-50010
