@@ -1,5 +1,22 @@
 # Quick Start
 
+### Create an AUTHENTICATION_ENDPOINT
+e.g. https://localhost/auth/
+
+Which accepts the POST parameters:
+- `username`
+- `password`
+
+And returns on successful authentication:
+```
+{
+	// URL to POST files PUT via FTP Hook
+	"url": "",
+	// Form parameter to use when POSTing files
+	"form_paramter": ""
+}
+```
+
 ### Deploy 
 
 https://hub.docker.com/r/webdevenginesllc/ftp-hook/
@@ -16,10 +33,7 @@ docker run \
   -p 0.0.0.0:21:21 \
   -p 0.0.0.0:20:20 \
   -p 0.0.0.0:5000-5010:5000-5010 \
-  -e WEB_HOOK='https://localhost/upload/' \
-  -e FTP_USERNAME='test' \
-  -e FTP_PASSWORD='test' \
-  -e WEB_HOOK_FORM_PARAMETER='file' \
+  -e AUTHENTICATION_URL='https://localhost/auth/' \
   ftp_hook
 ```
 
