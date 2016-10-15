@@ -13,7 +13,7 @@ And returns on successful authentication:
 	// URL to POST files PUT via FTP Hook
 	"url": "",
 	// Form parameter to use when POSTing files
-	"form_paramter": ""
+	"form_parameter": ""
 }
 ```
 
