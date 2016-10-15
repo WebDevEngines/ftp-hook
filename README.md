@@ -1,7 +1,7 @@
 # Quick Start
 
-### Create an AUTHENTICATION_ENDPOINT
-e.g. https://localhost/auth/
+### Create an authentication endpoint
+e.g. `https://localhost/auth/`
 
 Which accepts the POST parameters:
 - `username`
