@@ -4,15 +4,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from __future__ import unicode_literals
-from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.handlers import FTPHandler
-from pyftpdlib.servers import FTPServer
-from pyftpdlib.authorizers import AuthenticationFailed
 
 import os
 import requests
 import sys
 import logging
+
+from pyftpdlib.authorizers import (
+    DummyAuthorizer,
+    AuthenticationFailed
+)
+from pyftpdlib.handlers import (
+    FTPHandler,
+    TLS_FTPHandler
+)
+from pyftpdlib.servers import FTPServer
 
 
 logging.basicConfig(level=logging.INFO)
@@ -27,6 +33,8 @@ MAX_CONNS_PER_IP = os.environ.get("MAX_CONNS_PER_IP", 5)
 PASV_PORT_START = os.environ.get("PASV_PORT_START", 5000)
 PASV_PORT_END = os.environ.get("PASV_PORT_END", 5100)
 AUTHENTICATION_URL = os.environ.get("AUTHENTICATION_URL", None)
+CERT_FILE_PATH = os.environ.get("CERT_FILE_PATH", "ftps.pem")
+ENABLE_FTPS = os.environ.get("ENABLE_FTPS", None) == "True"
 
 
 class WebHookAuthorizer(DummyAuthorizer):
@@ -60,7 +68,7 @@ class WebHookAuthorizer(DummyAuthorizer):
         return "/jail/"
 
 
-class WebHookHandler(FTPHandler):
+class WebHookHandlerBase(object):
     def on_login(self, username):
         log.info("Logged In")
         if username not in WEBHOOKS:
@@ -90,12 +98,24 @@ class WebHookHandler(FTPHandler):
             f.close()
 
 
+class WebHookFTPHandler(FTPHandler, WebHookHandlerBase):
+    pass
+
+
+class WebHookFTPSHandler(TLS_FTPHandler, WebHookHandlerBase):
+    pass
+
+
 def main(port):
-    authorizer = WebHookAuthorizer()
-    handler = WebHookHandler
+    authorizer = WebHookAuthorizer()    
+    handler = WebHookFTPSHandler if ENABLE_FTPS else WebHookFTPHandler
+    if ENABLE_FTPS:
+        handler.certfile = CERT_FILE_PATH
+        handler.tls_control_required = True
+        handler.tls_data_required = True 
+    handler.permit_foreign_addresses = True   
     handler.authorizer = authorizer
     handler.banner = BANNER
-    handler.permit_foreign_addresses = True
     handler.passive_ports = range(int(PASV_PORT_START), int(PASV_PORT_END))
     server = FTPServer(("", port), handler)
     server.max_cons = int(MAX_CONNS)
