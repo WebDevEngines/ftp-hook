@@ -28,7 +28,7 @@ docker build -t ftp_hook .
 
 ### Run the docker image  
 
-Pass `ENABLE_FTPS` varialbe to use self-signed SSL cert (Generated during docker image build).
+Pass `ENABLE_FTPS` variable to use self-signed SSL cert (Generated during docker image build).
 
 ```
 docker run \
