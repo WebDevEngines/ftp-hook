@@ -37,6 +37,36 @@ CERT_FILE_PATH = os.environ.get("CERT_FILE_PATH", "ftps.pem")
 ENABLE_FTPS = os.environ.get("ENABLE_FTPS", None) == "True"
 
 
+def on_login(obj, username):
+    log.info("Logged In")
+    if username not in WEBHOOKS:
+        raise Exception("Username not found in WebHook map")
+    raw_wh = WEBHOOKS[username]
+    if "form_parameter" in raw_wh:
+        obj.webhook_form_parameter = raw_wh["form_parameter"]
+    else:
+        obj.webhook_form_parameter = "file"
+    if "url" in raw_wh:
+        obj.webhook = raw_wh["url"]
+    else:
+        raise Exception("WebHook URL is missing")
+
+
+def on_file_received(obj, _file):
+    log.info("File Received")
+    f = open(_file)
+    log.info("File Opened")
+    try:
+        log.info("WebHook Request Started")
+        r = requests.post(obj.webhook, files={obj.webhook_form_parameter: f})
+        log.info("WebHook Status Code: %s" % unicode(r.status_code))
+        log.info("WebHook Response: %s" % unicode(r.content))
+    except Exception, e:
+        log.info("Error: %s" % unicode(e))
+    finally:
+        f.close()
+
+
 class WebHookAuthorizer(DummyAuthorizer):
     def validate_authentication(self, username, password, handler):
         r = requests.post(AUTHENTICATION_URL, data={
@@ -68,51 +98,19 @@ class WebHookAuthorizer(DummyAuthorizer):
         return "/jail/"
 
 
-class WebHookHandlerBase(object):
-    def on_login(self, username):
-        log.info("Logged In")
-        if username not in WEBHOOKS:
-            raise Exception("Username not found in WebHook map")
-        raw_wh = WEBHOOKS[username]
-        if "form_parameter" in raw_wh:
-            self.webhook_form_parameter = raw_wh["form_parameter"]
-        else:
-            self.webhook_form_parameter = "file"
-        if "url" in raw_wh:
-            self.webhook = raw_wh["url"]
-        else:
-            raise Exception("WebHook URL is missing")
-
-    def on_file_received(self, _file):
-        log.info("File Received")
-        f = open(_file)
-        log.info("File Opened")
-        try:
-            log.info("WebHook Request Started")
-            r = requests.post(self.webhook, files={self.webhook_form_parameter: f})
-            log.info("WebHook Status Code: %s" % unicode(r.status_code))
-            log.info("WebHook Response: %s" % unicode(r.content))
-        except Exception, e:
-            log.info("Error: %s" % unicode(e))
-        finally:
-            f.close()
-
-
-class WebHookFTPHandler(FTPHandler, WebHookHandlerBase):
-    pass
-
-
-class WebHookFTPSHandler(TLS_FTPHandler, WebHookHandlerBase):
-    pass
-
-
 def main(port):
-    authorizer = WebHookAuthorizer()    
-    handler = WebHookFTPSHandler if ENABLE_FTPS else WebHookFTPHandler
+    authorizer = WebHookAuthorizer()
+    
     if ENABLE_FTPS:
+        handler = TLS_FTPHandler
         handler.certfile = CERT_FILE_PATH
         handler.tls_control_required = True
         handler.tls_data_required = True 
+    else:
+        handler = FTPHandler
+    
+    handler.on_login = on_login
+    handler.on_file_received = on_file_received
     handler.permit_foreign_addresses = True   
     handler.authorizer = authorizer
     handler.banner = BANNER
