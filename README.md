@@ -36,8 +36,9 @@ docker run \
   -p 0.0.0.0:21:21 \
   -p 0.0.0.0:20:20 \
   -p 0.0.0.0:5000-5100:5000-5100 \
-  -e AUTHENTICATION_URL='https://localhost/auth/' \
+  -e AUTHENTICATION_URL="https://localhost/auth/" \
   -e ENABLE_FTPS="True"
+  -e DOMAIN="yourhost.com"
   ftp_hook
 ```
 
