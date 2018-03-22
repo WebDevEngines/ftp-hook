@@ -83,7 +83,7 @@ class WebHookAuthorizer(DummyAuthorizer):
         return username in USERS.keys()
 
     def has_perm(self, username, perm, path=None):
-        return perm == "w"
+        return perm in ("l", "w", "e")
 
     def get_msg_login(self, username):
         return "Welcome"
@@ -92,10 +92,14 @@ class WebHookAuthorizer(DummyAuthorizer):
         return "Bye"
 
     def get_perms(self, username):
-        return "w"
+        return "elw"
 
     def get_home_dir(self, username):
-        return "/jail/"
+        directory = "/jail/%s/" % username
+        if not os.path.exists(directory):
+            print "Creating directory: %s" % directory
+            os.makedirs(directory)
+        return directory
 
 
 def main(port):
