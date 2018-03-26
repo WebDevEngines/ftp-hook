@@ -58,7 +58,7 @@ def on_file_received(obj, _file):
     log.info("File Opened")
     try:
         log.info("WebHook Request Started")
-        r = requests.post(obj.webhook, files={obj.webhook_form_parameter: f})
+        r = requests.post(obj.webhook, files={obj.webhook_form_parameter: f}, verify=False)
         log.info("WebHook Status Code: %s" % unicode(r.status_code))
         log.info("WebHook Response: %s" % unicode(r.content))
     except Exception, e:
@@ -72,7 +72,7 @@ class WebHookAuthorizer(DummyAuthorizer):
         r = requests.post(AUTHENTICATION_URL, data={
             "username": username,
             "password": password
-        })
+        }, verify=False)
 
         if r.status_code != 200:
             raise AuthenticationFailed
