@@ -83,7 +83,7 @@ class WebHookAuthorizer(DummyAuthorizer):
         return username in USERS.keys()
 
     def has_perm(self, username, perm, path=None):
-        return perm in ("l", "w", "e")
+        return perm in ("d","l", "w", "e")
 
     def get_msg_login(self, username):
         return "Welcome"
@@ -92,7 +92,7 @@ class WebHookAuthorizer(DummyAuthorizer):
         return "Bye"
 
     def get_perms(self, username):
-        return "elw"
+        return "delw"
 
     def get_home_dir(self, username):
         directory = "/jail/%s/" % username
